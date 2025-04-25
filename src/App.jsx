@@ -58,17 +58,26 @@ function App() {
   
   
   useEffect(() => {
-    let interval;
+    let animationFrameId;
+    let start = null;
+
+    const update = (timestamp) => {
+      if (!start) start = timestamp;
+      const elapsed = timestamp - start;
+      setTime(prev => prev + elapsed);
+      start = timestamp;
+      animationFrameId = requestAnimationFrame(update);
+    };
+
     if (isRunning) {
-      interval = setInterval(() => {
-        setTime(prevTime => prevTime + 10);
-      }, 10);
-    } else {
-      clearInterval(interval);
+      animationFrameId = requestAnimationFrame(update);
     }
-    return () => clearInterval(interval);
+
+    return () => cancelAnimationFrame(animationFrameId);
   }, [isRunning]);
 
+
+  
   const formatTime = (time) => {
     const getMilliseconds = `0${(time % 1000) / 10}`.slice(-2);
     const seconds = Math.floor(time / 1000);
@@ -79,6 +88,9 @@ function App() {
 
     return `${getHours}:${getMinutes}:${getSeconds}.${getMilliseconds}`;
   };
+
+  document.title = isRunning ? formatTime(time) : 'Tarot Insight';
+
 
   const deleteHistoryItem = (id) => {
     setHistory((prevHistory) => prevHistory.filter(item => item.id !== id));
