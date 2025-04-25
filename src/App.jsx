@@ -89,8 +89,18 @@ function App() {
     return `${getHours}:${getMinutes}:${getSeconds}.${getMilliseconds}`;
   };
 
-  document.title = isRunning ? formatTime(time) : 'Tarot Insight';
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (isRunning) {
+        document.title = formatTime(time);
+      } else {
+        document.title = 'Tarot Insight';
+      }
+    }, 1000); // update every 1 second
+
+    return () => clearInterval(interval);
+  }, [isRunning, time]);
 
   const deleteHistoryItem = (id) => {
     setHistory((prevHistory) => prevHistory.filter(item => item.id !== id));
