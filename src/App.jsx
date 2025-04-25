@@ -4,6 +4,7 @@ import logo from '/logo.png';
 import { FaHistory } from 'react-icons/fa';
 import { FaTrash } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRef } from 'react';
 
 
 
@@ -41,6 +42,8 @@ function App() {
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState('');
   const [showHistory, setShowHistory] = useState(true);
+  const startTimeRef = useRef(null);
+  const animationFrameRef = useRef(null);
 
 
   // 1. Load history when app starts
@@ -58,22 +61,21 @@ function App() {
   
   
   useEffect(() => {
-    let animationFrameId;
-    let start = null;
-
-    const update = (timestamp) => {
-      if (!start) start = timestamp;
-      const elapsed = timestamp - start;
-      setTime(prev => prev + elapsed);
-      start = timestamp;
-      animationFrameId = requestAnimationFrame(update);
+    const update = () => {
+      if (isRunning && startTimeRef.current != null) {
+        setTime(Date.now() - startTimeRef.current);
+        animationFrameRef.current = requestAnimationFrame(update);
+      }
     };
 
     if (isRunning) {
-      animationFrameId = requestAnimationFrame(update);
+      startTimeRef.current = Date.now() - time; // resume from paused time
+      animationFrameRef.current = requestAnimationFrame(update);
     }
 
-    return () => cancelAnimationFrame(animationFrameId);
+    return () => {
+      cancelAnimationFrame(animationFrameRef.current);
+    };
   }, [isRunning]);
 
 
@@ -92,15 +94,16 @@ function App() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (isRunning) {
-        document.title = formatTime(time);
+      if (isRunning && startTimeRef.current != null) {
+        const currentElapsed = Date.now() - startTimeRef.current;
+        document.title = formatTime(currentElapsed);
       } else {
         document.title = 'Tarot Insight';
       }
-    }, 1000); // update every 1 second
+    }, 1000);
 
     return () => clearInterval(interval);
-  }, [isRunning, time]);
+  }, [isRunning]);
 
   const deleteHistoryItem = (id) => {
     setHistory((prevHistory) => prevHistory.filter(item => item.id !== id));
