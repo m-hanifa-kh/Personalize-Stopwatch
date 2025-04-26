@@ -1,9 +1,18 @@
 /* App.css */
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
 
 /* Base font size */
 html {
   font-size: 62.5%;
 }
+
 
 /* Font faces */
 @font-face {
@@ -34,14 +43,20 @@ html {
 .App {
   text-align: center;
   font-family: 'CustomInterfaceFont', Arial, sans-serif;
+  background-color: transparent;
+  min-height: 100vh;
 }
+
+
+
 
 /* New parent container to control background */
 .App-container {
   min-height: 100vh;
-  background-color: #ffffff;
+  background-color: transparent; /* ✨ Make background transparent by default */
   transition: background-color 0.4s ease;
 }
+
 
 /* When in dark mode */
 .App-container.dark {
@@ -94,6 +109,7 @@ html {
   border-radius: 50%;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease;
+  background-color:transparent;
 }
 
 /* Headings */
