@@ -44,6 +44,8 @@ function App() {
   const [showHistory, setShowHistory] = useState(true);
   const startTimeRef = useRef(null);
   const animationFrameRef = useRef(null);
+  const elapsedRef = useRef(0);
+  const [displayTime, setDisplayTime] = useState(0);
 
 
   // 1. Load history when app starts
@@ -63,7 +65,10 @@ function App() {
   useEffect(() => {
     const update = () => {
       if (isRunning && startTimeRef.current != null) {
-        setTime(Date.now() - startTimeRef.current);
+        const elapsed = Date.now() - startTimeRef.current;
+        setTime(elapsed);
+        setDisplayTime(elapsed);
+        elapsedRef.current = elapsed;
         animationFrameRef.current = requestAnimationFrame(update);
       }
     };
@@ -87,6 +92,7 @@ function App() {
     const minutes = Math.floor(time / 60000);
     const getMinutes = `0${minutes % 60}`.slice(-2);
     const getHours = `0${Math.floor(time / 3600000)}`.slice(-2);
+  
 
     return `${getHours}:${getMinutes}:${getSeconds}.${getMilliseconds}`;
   };
@@ -94,9 +100,10 @@ function App() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (isRunning && startTimeRef.current != null) {
-        const currentElapsed = Date.now() - startTimeRef.current;
-        document.title = formatTime(currentElapsed);
+      if (isRunning) {
+        const now = Date.now();
+        const diff = now - (startTimeRef.current ?? now);
+        document.title = formatTime(elapsedRef.current + diff);
       } else {
         document.title = 'Tarot Insight';
       }
@@ -120,33 +127,44 @@ function App() {
         </p>
 
 
-          <h2>{formatTime(time)}</h2>
+          <h2>{formatTime(displayTime)}</h2>
           <div>
               {!isRunning && time === 0 && (
                   <button onClick={() => setIsRunning(true)}>Start</button>
               )}
               {isRunning && (
-                  <button onClick={() => setIsRunning(false)}>Pause</button>
+              <button onClick={() => {
+                setIsRunning(false);
+                elapsedRef.current = time; // save elapsed time
+              }}>
+                Pause
+              </button>
               )}
-              {!isRunning && time !== 0 && (
-                  <button onClick={() => setIsRunning(true)}>Resume</button>
+          {!isRunning && time !== 0 && (
+           <button onClick={() => setIsRunning(true)}>Resume</button>
               )}
-              {time !== 0 && (
-      <button
-        onClick={() => {
-          setHistory(prev => [
-            ...prev,
-            {
-              id: Date.now(),
-              name: 'Untitled',
-              time: formatDuration(Math.floor(time / 1000)),
-              timestamp: getCurrentTimestamp(),
-            },
-          ]);
-          setTime(0);
-          setIsRunning(false);
-        }}
-      > Reset </button> )} 
+            {time !== 0 && (
+              <button
+                onClick={() => {
+                  setHistory(prev => [
+                    ...prev,
+                    {
+                      id: Date.now(),
+                      name: 'Untitled',
+                      time: formatDuration(Math.floor(elapsedRef.current / 1000)),
+                      timestamp: getCurrentTimestamp(),
+                    },
+                  ]);
+                  setTime(0);
+                  setDisplayTime(0);
+                  elapsedRef.current = 0;
+                  setIsRunning(false);
+                }}
+              >
+                Reset
+              </button>
+            )}
+
           <div className="history-section">
             <div className="history-toggle">
                <h3 style={{ margin: 0 }}>History</h3>
