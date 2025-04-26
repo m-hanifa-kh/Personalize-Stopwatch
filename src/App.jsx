@@ -100,40 +100,21 @@ function App() {
 
 
   useEffect(() => {
-    let animationFrameId;
-    let lastUpdate = 0;
-
-    const updateTitle = () => {
-      if (!isRunning) {
-        document.title = 'Tarot Insight';
-        return;
-      }
-
-      const elapsed = startTimeRef.current ? Date.now() - startTimeRef.current : 0;
-
-      if (elapsed - lastUpdate >= 1000) {
-        document.title = formatTime(elapsed);
-        lastUpdate = elapsed;
-      }
-
-      animationFrameId = requestAnimationFrame(updateTitle);
-    };
+    let intervalId;
 
     if (isRunning) {
-      updateTitle(); // Only start the loop when running
+      intervalId = setInterval(() => {
+        const elapsed = startTimeRef.current ? Date.now() - startTimeRef.current : 0;
+        document.title = formatTime(elapsed);
+      }, 1000);
     } else {
       document.title = 'Tarot Insight';
     }
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      clearInterval(intervalId);
     };
   }, [isRunning]);
-
-
-
-
-
 
 
 
