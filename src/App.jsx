@@ -132,7 +132,9 @@ function App() {
         timeWhenHidden = performance.now() - startTime;
       } else {
         // Reset the start time when the tab becomes active
-        startTime = performance.now();
+        const now = performance.now();
+        startTime = now - elapsedRef.current; // Sync start time with elapsedRef
+        timeWhenHidden = 0; // Reset timeWhenHidden on visibility change
       }
     };
 
@@ -143,6 +145,7 @@ function App() {
       document.removeEventListener('visibilitychange', handleVisibilityChange); // Cleanup the event listener
     };
   }, [isRunning]);
+
 
 
 
