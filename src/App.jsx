@@ -9,7 +9,6 @@ import { useRef } from 'react';
 
 function getCurrentTimestamp() {
   const now = new Date();
-
   const year = now.getFullYear();
   const day = now.getDate();
   const month = now.toLocaleString('default', { month: 'long' });
@@ -45,6 +44,8 @@ function App() {
   const animationFrameRef = useRef(null);
   const elapsedRef = useRef(0);
   const [displayTime, setDisplayTime] = useState(0);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
 
 
   // 1. Load history when app starts
@@ -128,14 +129,27 @@ function App() {
   };
 
   return (
-    <><img src={logo} alt="Logo" className="brandlogo"/>
-      <div className="App">
+    <><div className={`App-container ${isDarkMode ? 'dark' : ''}`}>
+        <img src={logo} alt="Logo" className="brandlogo"/>
+        <div className="App">
+
         <h1>Tarot Insight</h1>
         <h2 className="subtitle"> Psychological Tarot Reading</h2>
         <p className="description">
           Mengungkap pesan semesta <br />
            by @mhanifakh
         </p>
+
+        <div className="toggle-theme">
+          <button
+            onClick={() => setIsDarkMode(prev => !prev)}
+            className="theme-toggle"
+            aria-label="Toggle Theme"
+          >
+            {isDarkMode ? '🌞' : '🌙'}
+          </button>
+        </div>
+
 
 
           <h2>{formatTime(displayTime)}</h2>
@@ -257,7 +271,8 @@ function App() {
               </AnimatePresence> {/* Ends the animation */}
             </div> {/* Ends .history-section */}
           </div> {/* This one closes the buttons wrapper */}
-        </div> {/* This one closes the .App container */}
+        </div> {/* This one closes the .App inner */}
+      </div> {/* This one closes the .App-container */}
     </>
   );
 }

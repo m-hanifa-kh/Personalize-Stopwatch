@@ -36,6 +36,53 @@ html {
   font-family: 'CustomInterfaceFont', Arial, sans-serif;
 }
 
+/* New parent container to control background */
+.App-container {
+  min-height: 100vh;
+  background-color: #ffffff;
+  transition: background-color 0.4s ease;
+}
+
+/* When in dark mode */
+.App-container.dark {
+  background-color: #121212;
+}
+
+
+/* Smooth transition for dark mode */
+.App, .App * {
+  transition: background-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Animate sun/moon icon rotation + circle hover + press down */
+.theme-toggle {
+  cursor: pointer;
+  font-size: 2.4rem;
+  transition: transform 0.2s ease, background-color 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  margin: 1rem;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background-color: transparent;
+}
+
+.theme-toggle:hover {
+  transform: rotate(20deg);
+  background-color: rgba(0, 0, 0, 0.1); /* light semi-transparent circle */
+}
+
+.theme-toggle:active {
+  transform: scale(0.92) rotate(20deg);
+  background-color: rgba(0, 0, 0, 0.2); /* slightly darker on click */
+}
+
+
+
+
 /* Brand logo */
 .brandlogo {
   width: 10rem;
@@ -70,6 +117,35 @@ h3 {
   text-align: center;
   color: #444;
 }
+
+/* Dark Mode Styles */
+.dark {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+.dark h1, .dark h2, .dark h3, .dark p, .dark li, .dark button {
+  color: #e0e0e0;
+}
+
+.dark .brandlogo {
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+}
+
+.toggle-theme {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+}
+
+.toggle-theme button {
+  background: none;
+  border: none;
+  font-size: 3rem;
+  cursor: pointer;
+  color: inherit;
+}
+
 
 /* Text elements */
 .subtitle,
@@ -117,6 +193,12 @@ button:hover {
 button:focus {
   outline: none;
 }
+
+button:active {
+  transform: scale(0.92);
+  background-color: rgb(48, 48, 48, 0.5); /* slightly darker on click */
+}
+
 
 .start-btn {
   background-color: #4caf50;
@@ -175,6 +257,7 @@ li {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-left: 3.5rem
 }
 
 /* History items */
