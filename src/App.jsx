@@ -86,31 +86,35 @@ function App() {
 
   
   const formatTime = (time) => {
-    const getMilliseconds = `0${(time % 1000) / 10}`.slice(-2);
-    const seconds = Math.floor(time / 1000);
-    const getSeconds = `0${seconds % 60}`.slice(-2);
-    const minutes = Math.floor(time / 60000);
-    const getMinutes = `0${minutes % 60}`.slice(-2);
-    const getHours = `0${Math.floor(time / 3600000)}`.slice(-2);
-  
+    const totalSeconds = Math.floor(time / 1000);
+    const seconds = totalSeconds % 60;
+    const minutes = Math.floor(totalSeconds / 60) % 60;
+    const hours = Math.floor(totalSeconds / 3600);
 
-    return `${getHours}:${getMinutes}:${getSeconds}.${getMilliseconds}`;
+    const getSeconds = `0${seconds}`.slice(-2);
+    const getMinutes = `0${minutes}`.slice(-2);
+    const getHours = `0${hours}`.slice(-2);
+
+    return `${getHours}:${getMinutes}:${getSeconds}`;
   };
 
 
+
   useEffect(() => {
+    if (!isRunning) {
+      document.title = 'Tarot Insight';
+      return;
+    }
+
     const interval = setInterval(() => {
-      if (isRunning) {
-        const now = Date.now();
-        const diff = now - (startTimeRef.current ?? now);
-        document.title = formatTime(elapsedRef.current + diff);
-      } else {
-        document.title = 'Tarot Insight';
-      }
+      const now = Date.now();
+      const diff = now - (startTimeRef.current ?? now);
+      document.title = formatTime(elapsedRef.current + diff);
     }, 1000);
 
     return () => clearInterval(interval);
   }, [isRunning]);
+
 
   const deleteHistoryItem = (id) => {
     setHistory((prevHistory) => prevHistory.filter(item => item.id !== id));
@@ -144,25 +148,33 @@ function App() {
            <button onClick={() => setIsRunning(true)}>Resume</button>
               )}
             {time !== 0 && (
-              <button
-                onClick={() => {
-                  setHistory(prev => [
-                    ...prev,
-                    {
-                      id: Date.now(),
-                      name: 'Untitled',
-                      time: formatDuration(Math.floor(elapsedRef.current / 1000)),
-                      timestamp: getCurrentTimestamp(),
-                    },
-                  ]);
-                  setTime(0);
-                  setDisplayTime(0);
-                  elapsedRef.current = 0;
-                  setIsRunning(false);
-                }}
-              >
-                Reset
-              </button>
+      <button
+        onClick={() => {
+          const now = Date.now();
+          const actualElapsed = isRunning
+            ? now - (startTimeRef.current ?? now)
+            : elapsedRef.current;
+
+          setHistory(prev => [
+            ...prev,
+            {
+              id: Date.now(),
+              name: 'Untitled',
+              time: formatDuration(Math.floor(actualElapsed / 1000)),
+              timestamp: getCurrentTimestamp(),
+            },
+          ]);
+          setTime(0);
+          setDisplayTime(0);
+          elapsedRef.current = 0;
+          setIsRunning(false);
+          setEditingId(null);
+          setEditingText('');
+        }}
+      >
+        Reset
+      </button>
+
             )}
 
           <div className="history-section">
