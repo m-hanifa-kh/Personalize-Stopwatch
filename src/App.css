@@ -1,17 +1,36 @@
 /* App.css */
 
+/* Set base font size */
 html {
   font-size: 62.5%; /* 62.5% of 16px = 10px, so 1rem = 10px */
 }
 
 
-
+/* Font faces - all grouped at the top */
 @font-face {
   font-family: 'CustomInterfaceFont';
-  src: url('fonts/HanifHandwritingV5-Regular.ttf') format('truetype');
+  src: url('/fonts/HanifHandwritingV5-Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
+
+@font-face {
+  font-family: 'CustomBrandFont';
+  src: url('/fonts/spiritmedium.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CustomTimerFont';
+  src: url('/fonts/YourTimerFont.ttf') format('truetype'); /* <-- fix your file path */
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 
 .App {
   text-align: center;
@@ -24,11 +43,11 @@ html {
   margin-bottom: 2rem; /* Adjust this to control the space between the logo and h1 */
   width: 10rem; /* Fixed size for the circle */
   height: 10rem; /* Equal height and width for a perfect circle */
-  object-fit: contain; /* Ensures the logo fills the circle without distortion */
+  object-fit: contain; 
   display: block;
   margin-left: auto;
   margin-right: auto;
-  border: 0 solid #542989; /* Border color around the circle */
+  border: 0 solid #542989; 
   border-radius: 50%; /* Makes the container a perfect circle */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional shadow effect */
   transition: transform 0.3s ease;
@@ -36,13 +55,6 @@ html {
 
 
 /* Heading styles */
-@font-face {
-  font-family: 'CustomBrandFont';
-  src: url('fonts/spiritmedium.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-
 h1 {
   margin-top: 0; /* Remove any default margin */
   font-size: 4rem;
@@ -71,14 +83,6 @@ h1 {
 
 
 /* Stopwatch timer display */
-/* Add font-face for stopwatch timer font */
-@font-face {
-  font-family: 'CustomTimerFont';
-  src: url('path/to/your/timer/font/file.ttf') format('truetype'); /* Adjust the file path */
-  font-weight: normal;
-  font-style: normal;
-}
-
 h2 {
   font-size: 4.8rem;
   margin-top: 2rem;

@@ -103,6 +103,10 @@ function App() {
     let intervalId;
 
     if (isRunning) {
+      // Instantly update the title without waiting
+      const elapsed = startTimeRef.current ? Date.now() - startTimeRef.current : 0;
+      document.title = formatTime(elapsed);
+
       intervalId = setInterval(() => {
         const elapsed = startTimeRef.current ? Date.now() - startTimeRef.current : 0;
         document.title = formatTime(elapsed);
@@ -115,6 +119,7 @@ function App() {
       clearInterval(intervalId);
     };
   }, [isRunning]);
+
 
 
 
