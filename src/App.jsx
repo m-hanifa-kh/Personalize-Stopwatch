@@ -88,8 +88,8 @@ function App() {
   useEffect(() => {
     localStorage.setItem('stopwatch-history', JSON.stringify(history));
   }, [history]);
-  
-  
+
+
   useEffect(() => {
     const update = () => {
       if (isRunning && startTimeRef.current != null) {
@@ -112,7 +112,7 @@ function App() {
   }, [isRunning]);
 
 
-  
+
   const formatTime = (time) => {
     const totalSeconds = Math.floor(time / 1000);
     const seconds = totalSeconds % 60;
@@ -172,7 +172,7 @@ function App() {
             )}
           </div>
 
-          
+
         <h1>Tarot Insight</h1>
         <h2 className="subtitle"> Psychological Tarot Reading</h2>
         <p className="description">
