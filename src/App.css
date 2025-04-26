@@ -52,10 +52,12 @@ html {
 
 /* New parent container to control background */
 .App-container {
+  padding-top: 3rem;
   min-height: 100vh;
-  background-color: transparent; /* ✨ Make background transparent by default */
+  background-color: #f9f9f9; /* ✨ Make background transparent by default */
   transition: background-color 0.4s ease;
 }
+
 
 
 /* When in dark mode */
@@ -333,4 +335,11 @@ li {
 
 .delete-btn:hover {
   color: #a30000;
+}
+
+
+/* Fix for elements that should be transparent but have white background */
+.brandlogo,
+.theme-toggle {
+  background-color: transparent !important;
 }
