@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import logo from '/logo.png';
-import { FaHistory } from 'react-icons/fa';
-import { FaTrash } from 'react-icons/fa';
+import { FaHistory, FaTrash } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRef } from 'react';
 
@@ -102,9 +101,9 @@ function App() {
 
   useEffect(() => {
     let animationFrameId;
-    let startTime = performance.now(); // Start timing from here
-    let lastUpdate = 0;  // Track the last time we updated the title
-    let timeWhenHidden = 0; // Track time when tab is hidden
+    let lastUpdate = 0; // ✅ declare missing
+    let startTime = performance.now(); // ✅ declare missing
+    let timeWhenHidden = 0; // ✅ declare missing
 
     const updateTitle = () => {
       if (!isRunning) {
@@ -112,39 +111,36 @@ function App() {
         return;
       }
 
-      const now = performance.now();
-      const elapsed = now - startTime + timeWhenHidden;
+      const elapsed = elapsedRef.current; // ✅ correct
 
-      // Check if 1 second has passed (no drift)
       if (elapsed - lastUpdate >= 1000) {
         document.title = formatTime(elapsed);
-        lastUpdate = elapsed; // Update the lastUpdate time
+        lastUpdate = elapsed;
       }
 
-      animationFrameId = requestAnimationFrame(updateTitle); // Keep the loop going
+      animationFrameId = requestAnimationFrame(updateTitle);
     };
 
     updateTitle(); // Start the loop
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        // Record the time when the tab is hidden
         timeWhenHidden = performance.now() - startTime;
       } else {
-        // Reset the start time when the tab becomes active
         const now = performance.now();
-        startTime = now - elapsedRef.current; // Sync start time with elapsedRef
-        timeWhenHidden = 0; // Reset timeWhenHidden on visibility change
+        startTime = now - elapsedRef.current;
+        timeWhenHidden = 0;
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      cancelAnimationFrame(animationFrameId); // Cleanup the animation frame
-      document.removeEventListener('visibilitychange', handleVisibilityChange); // Cleanup the event listener
+      cancelAnimationFrame(animationFrameId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [isRunning]);
+
 
 
 
@@ -191,9 +187,8 @@ function App() {
         className="reset-btn"
         onClick={() => {
           const now = Date.now();
-          const actualElapsed = isRunning
-            ? now - (startTimeRef.current ?? now)
-            : elapsedRef.current;
+          const actualElapsed = now - (startTimeRef.current ?? now);
+
 
           setHistory(prev => [
             ...prev,
