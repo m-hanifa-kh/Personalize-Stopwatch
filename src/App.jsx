@@ -161,18 +161,22 @@ function App() {
         <h1>Tarot Insight</h1>
         <h2 className="subtitle"> Psychological Tarot Reading</h2>
         <p className="description">
-          Menungkap pesan semesta <br />
-            by @mhanifakh
+          Mengungkap pesan semesta <br />
+           by @mhanifakh
         </p>
 
 
           <h2>{formatTime(displayTime)}</h2>
           <div>
               {!isRunning && time === 0 && (
-                  <button onClick={() => setIsRunning(true)}>Start</button>
+                  <button 
+                     className="start-btn"
+                    onClick={() => setIsRunning(true)}>Start</button>
               )}
               {isRunning && (
-              <button onClick={() => {
+              <button 
+                className="pause-btn" 
+                onClick={() => {
                 setIsRunning(false);
                 elapsedRef.current = time; // save elapsed time
               }}>
@@ -180,10 +184,11 @@ function App() {
               </button>
               )}
           {!isRunning && time !== 0 && (
-           <button onClick={() => setIsRunning(true)}>Resume</button>
+           <button  className="start-btn" onClick={() => setIsRunning(true)}>Resume</button>
               )}
             {time !== 0 && (
       <button
+        className="reset-btn"
         onClick={() => {
           const now = Date.now();
           const actualElapsed = isRunning

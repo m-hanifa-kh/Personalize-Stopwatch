@@ -20,8 +20,8 @@ html {
 
 /* Centering the brand logo */
 .brandlogo {
-  margin-top: 2rem;
-  margin-bottom: 1rem; /* Adjust this to control the space between the logo and h1 */
+  margin-top: 4rem;
+  margin-bottom: 2rem; /* Adjust this to control the space between the logo and h1 */
   width: 10rem; /* Fixed size for the circle */
   height: 10rem; /* Equal height and width for a perfect circle */
   object-fit: contain; /* Ensures the logo fills the circle without distortion */
@@ -101,18 +101,53 @@ button {
   cursor: pointer;
   border: none;
   border-radius: 5px;
-  background-color: #61dafb;
+  background-color: #8813fa;
   color: white;
   transition: background-color 0.2s ease;
+  font-family: 'CustomInterfaceFont', Arial, sans-serif; 
 }
 
 button:hover {
-  background-color: #21a1f1;
+  background-color: #470788;
 }
 
 button:focus {
   outline: none;
 }
+
+.start-btn {
+  background-color: #4caf50; /* green 4caf50 */
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  font-size: 1.6rem;
+  margin: 0.5rem;
+  border-radius: 0.8rem;
+  cursor: pointer;
+}
+
+.pause-btn {
+  background-color: #f44336; /* red */
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  font-size: 1.6rem;
+  margin: 0.5rem;
+  border-radius: 0.8rem;
+  cursor: pointer;
+}
+
+.reset-btn {
+  background-color: #2196f3; /* blue */
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  font-size: 1.6rem;
+  margin: 0.5rem;
+  border-radius: 0.8rem;
+  cursor: pointer;
+}
+
 
 
 
