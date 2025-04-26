@@ -1,5 +1,7 @@
 
+import { gapi } from 'gapi-script';
 import React, { useState, useEffect } from 'react';
+import { initGoogleAPI } from './googleLogin';
 import './App.css';
 import logo from '/logo.png';
 import { FaHistory, FaTrash } from 'react-icons/fa';
@@ -46,6 +48,31 @@ function App() {
   const elapsedRef = useRef(0);
   const [displayTime, setDisplayTime] = useState(0);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const handleLogin = async () => {
+    const auth = gapi.auth2.getAuthInstance();
+    try {
+      const user = await auth.signIn();
+      setUser(user.getBasicProfile());
+      setIsSignedIn(true);
+    } catch (error) {
+      console.error('Login error:', error);
+    }
+  };
+
+  const handleLogout = () => {
+    const auth = gapi.auth2.getAuthInstance();
+    auth.signOut();
+    setUser(null);
+    setIsSignedIn(false);
+  };
+
+
+  useEffect(() => {
+    initGoogleAPI();
+  }, []);
+
 
 
 
@@ -134,6 +161,18 @@ function App() {
         <img src={logo} alt="Logo" className="brandlogo"/>
         <div className="App">
 
+          <div className="google-login-section">
+            {!isSignedIn ? (
+              <button onClick={handleLogin} className="login-btn">Login with Google</button>
+            ) : (
+              <div>
+                <p>Welcome, {user?.getName()}!</p>
+                <button onClick={handleLogout} className="logout-btn">Logout</button>
+              </div>
+            )}
+          </div>
+
+          
         <h1>Tarot Insight</h1>
         <h2 className="subtitle"> Psychological Tarot Reading</h2>
         <p className="description">
