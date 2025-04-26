@@ -101,19 +101,51 @@ function App() {
 
 
   useEffect(() => {
-    if (!isRunning) {
-      document.title = 'Tarot Insight';
-      return;
-    }
+    let animationFrameId;
+    let startTime = performance.now(); // Start timing from here
+    let lastUpdate = 0;  // Track the last time we updated the title
+    let timeWhenHidden = 0; // Track time when tab is hidden
 
-    const interval = setInterval(() => {
-      const now = Date.now();
-      const diff = now - (startTimeRef.current ?? now);
-      document.title = formatTime(elapsedRef.current + diff);
-    }, 1000);
+    const updateTitle = () => {
+      if (!isRunning) {
+        document.title = 'Tarot Insight';
+        return;
+      }
 
-    return () => clearInterval(interval);
+      const now = performance.now();
+      const elapsed = now - startTime + timeWhenHidden;
+
+      // Check if 1 second has passed (no drift)
+      if (elapsed - lastUpdate >= 1000) {
+        document.title = formatTime(elapsed);
+        lastUpdate = elapsed; // Update the lastUpdate time
+      }
+
+      animationFrameId = requestAnimationFrame(updateTitle); // Keep the loop going
+    };
+
+    updateTitle(); // Start the loop
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Record the time when the tab is hidden
+        timeWhenHidden = performance.now() - startTime;
+      } else {
+        // Reset the start time when the tab becomes active
+        startTime = performance.now();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId); // Cleanup the animation frame
+      document.removeEventListener('visibilitychange', handleVisibilityChange); // Cleanup the event listener
+    };
   }, [isRunning]);
+
+
+
 
 
   const deleteHistoryItem = (id) => {
