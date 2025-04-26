@@ -8,7 +8,7 @@ html {
 
 @font-face {
   font-family: 'CustomInterfaceFont';
-  src: url('public/HanifHandwritingV5-Regular.ttf') format('truetype');
+  src: url('fonts/HanifHandwritingV5-Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
@@ -38,7 +38,7 @@ html {
 /* Heading styles */
 @font-face {
   font-family: 'CustomBrandFont';
-  src: url('public/spiritmedium.ttf') format('truetype');
+  src: url('fonts/spiritmedium.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }

@@ -101,9 +101,7 @@ function App() {
 
   useEffect(() => {
     let animationFrameId;
-    let lastUpdate = 0; // ✅ declare missing
-    let startTime = performance.now(); // ✅ declare missing
-    let timeWhenHidden = 0; // ✅ declare missing
+    let lastUpdate = 0;
 
     const updateTitle = () => {
       if (!isRunning) {
@@ -111,7 +109,7 @@ function App() {
         return;
       }
 
-      const elapsed = elapsedRef.current; // ✅ correct
+      const elapsed = startTimeRef.current ? Date.now() - startTimeRef.current : 0;
 
       if (elapsed - lastUpdate >= 1000) {
         document.title = formatTime(elapsed);
@@ -121,25 +119,17 @@ function App() {
       animationFrameId = requestAnimationFrame(updateTitle);
     };
 
-    updateTitle(); // Start the loop
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        timeWhenHidden = performance.now() - startTime;
-      } else {
-        const now = performance.now();
-        startTime = now - elapsedRef.current;
-        timeWhenHidden = 0;
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    if (isRunning) {
+      updateTitle(); // Only start the loop when running
+    } else {
+      document.title = 'Tarot Insight';
+    }
 
     return () => {
       cancelAnimationFrame(animationFrameId);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [isRunning]);
+
 
 
 
