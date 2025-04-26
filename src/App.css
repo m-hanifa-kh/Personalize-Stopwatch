@@ -1,12 +1,11 @@
 /* App.css */
 
-/* Set base font size */
+/* Base font size */
 html {
-  font-size: 62.5%; /* 62.5% of 16px = 10px, so 1rem = 10px */
+  font-size: 62.5%;
 }
 
-
-/* Font faces - all grouped at the top */
+/* Font faces */
 @font-face {
   font-family: 'CustomInterfaceFont';
   src: url('/fonts/HanifHandwritingV5-Regular.ttf') format('truetype');
@@ -25,90 +24,90 @@ html {
 
 @font-face {
   font-family: 'CustomTimerFont';
-  src: url('/fonts/YourTimerFont.ttf') format('truetype'); /* <-- fix your file path */
+  src: url('/fonts/Nunito-Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
 
-
+/* Global App style */
 .App {
   text-align: center;
-  font-family: 'CustomInterfaceFont', Arial, sans-serif; /* Apply custom font */
+  font-family: 'CustomInterfaceFont', Arial, sans-serif;
 }
 
-/* Centering the brand logo */
+/* Brand logo */
 .brandlogo {
-  margin-top: 4rem;
-  margin-bottom: 2rem; /* Adjust this to control the space between the logo and h1 */
-  width: 10rem; /* Fixed size for the circle */
-  height: 10rem; /* Equal height and width for a perfect circle */
-  object-fit: contain; 
+  width: 10rem;
+  height: 10rem;
+  margin: 4rem auto 2rem auto;
   display: block;
-  margin-left: auto;
-  margin-right: auto;
-  border: 0 solid #542989; 
-  border-radius: 50%; /* Makes the container a perfect circle */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional shadow effect */
+  object-fit: contain;
+  border: 0 solid #542989;
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease;
 }
 
-
-/* Heading styles */
+/* Headings */
 h1 {
-  margin-top: 0; /* Remove any default margin */
   font-size: 4rem;
-  margin-bottom: 0.5rem;
+  margin: 0 0 0.5rem 0;
   text-align: center;
-  font-family: 'CustomBrandFont', Arial, sans-serif; /* Apply custom font */
+  font-family: 'CustomBrandFont', Arial, sans-serif;
+}
+
+h2 {
+  font-size: 4.8rem;
+  margin: 2rem 0 3rem 0;
+  text-align: center;
+  font-family: 'CustomTimerFont', Arial, sans-serif;
+}
+
+h3 {
+  font-size: 2.4rem;
+  margin-top: 4rem;
+  text-align: center;
+  color: #444;
+}
+
+/* Text elements */
+.subtitle,
+.description {
+  text-align: center;
+  margin: 0 auto 1rem auto;
+  font-family: 'CustomInterfaceFont', Arial, sans-serif;
 }
 
 .subtitle {
   font-size: 2.4rem;
   color: #555;
-  margin-bottom: 1rem;
-  margin-top: 0; /* Remove any default margin */
-  text-align: center;
-  font-family: 'CustomInterfaceFont', Arial, sans-serif; /* Fixes the font override */
-
 }
 
 .description {
   font-size: 1.6rem;
   color: #777;
-  margin-bottom: 1rem; /* smaller spacing for multi-paragraph look */
   line-height: 1.5;
-  text-align: center;
 }
 
-
-/* Stopwatch timer display */
-h2 {
-  font-size: 4.8rem;
-  margin-top: 2rem;
-  margin-bottom: 3rem;
-  text-align: center;
-  font-family: 'CustomTimerFont', Arial, sans-serif; /* Apply custom font */
-}
-
-h3 {
-  margin-top: 4rem;
-  font-size: 2.4rem;
-  color: #444;
-  text-align: center;
+/* Buttons */
+button,
+.start-btn,
+.pause-btn,
+.reset-btn {
+  font-size: 1.6rem;
+  padding: 0.8rem 1.5rem;
+  margin: 0.5rem;
+  border: none;
+  border-radius: 0.8rem;
+  cursor: pointer;
+  color: white;
+  font-family: 'CustomTimerFont', Arial, sans-serif;
+  transition: background-color 0.2s ease;
 }
 
 button {
-  font-size: 1.6rem;
-  padding: 1rem 2rem;
-  margin: 0.5rem;
-  cursor: pointer;
-  border: none;
-  border-radius: 5px;
   background-color: #8813fa;
-  color: white;
-  transition: background-color 0.2s ease;
-  font-family: 'CustomInterfaceFont', Arial, sans-serif; 
 }
 
 button:hover {
@@ -120,41 +119,18 @@ button:focus {
 }
 
 .start-btn {
-  background-color: #4caf50; /* green 4caf50 */
-  color: white;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  font-size: 1.6rem;
-  margin: 0.5rem;
-  border-radius: 0.8rem;
-  cursor: pointer;
+  background-color: #4caf50;
 }
 
 .pause-btn {
-  background-color: #f44336; /* red */
-  color: white;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  font-size: 1.6rem;
-  margin: 0.5rem;
-  border-radius: 0.8rem;
-  cursor: pointer;
+  background-color: #f44336;
 }
 
 .reset-btn {
-  background-color: #2196f3; /* blue */
-  color: white;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  font-size: 1.6rem;
-  margin: 0.5rem;
-  border-radius: 0.8rem;
-  cursor: pointer;
+  background-color: #2196f3;
 }
 
-
-
-
+/* List styles */
 ul {
   list-style-type: none;
   padding: 0;
@@ -166,16 +142,17 @@ li {
   color: #333;
 }
 
-
-
-
 /* History Section */
+.history-section {
+  margin-top: 2rem;
+  text-align: center;
+}
+
 .history-toggle {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   margin-top: 2rem;
-  text-align: center;
 }
 
 .history-toggle button {
@@ -184,7 +161,6 @@ li {
   cursor: pointer;
   font-size: 2rem;
   color: #333;
-  transform: rotate(0deg);
   transition: transform 0.3s ease;
 }
 
@@ -192,26 +168,25 @@ li {
   transform: rotate(-90deg);
 }
 
-
-
-/* History list and items */
+/* History list */
 .history-list {
   overflow: hidden;
   margin-top: 1rem;
-  padding: 0;
-  list-style: none;
   display: flex;
   flex-direction: column;
-  align-items: center; /* center all list items horizontally */
+  align-items: center;
 }
 
-.history-section {
-  margin-top: 2rem;
-  text-align: center;
-}
-
+/* History items */
 .history-list li {
   margin-bottom: 1rem;
+}
+
+.history-item {
+  display: flex;
+  justify-content: center;
+  flex: 1;
+  text-align: center;
 }
 
 .history-item strong {
@@ -223,8 +198,6 @@ li {
   color: #888;
 }
 
-
-
 .history-item input {
   font-size: 1.4rem;
   padding: 0.4rem;
@@ -232,16 +205,15 @@ li {
   box-sizing: border-box;
 }
 
-/* Wrapper for each history item that will trigger hover effect */
+/* History item container */
 .history-item-container {
-  display: flex; /* Aligns text and icon side by side */
-  justify-content: space-between; /* Pushes icon to the right of the text */
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  width: 100%;              /* allow full width on smaller screens */
-  max-width: 40rem;         /* keep a readable width */
-  align-items: center;
+  width: 100%;
+  max-width: 40rem;
   padding: 0.4rem 0.8rem;
-  margin: 0 auto 1rem auto; /* center the container */
+  margin: 0 auto 1rem auto;
   border-radius: 0.8rem;
   transition: background-color 0.2s ease;
 }
@@ -256,21 +228,10 @@ li {
   transition: opacity 0.2s ease;
 }
 
-/* Show delete button when hovering over the history item */
 .history-item-container:hover .delete-btn {
-  opacity: 1; /* Show on hover */
-  transition: opacity 0.2s ease
+  opacity: 1;
 }
 
 .delete-btn:hover {
   color: #a30000;
 }
-
-/* History item text style */
-.history-item {
-  display: flex;
-  justify-content: center;
-  flex: 1; /* take up the remaining space between the icon */
-  text-align: center;
-}
-
