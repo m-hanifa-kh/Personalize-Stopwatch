@@ -1,5 +1,6 @@
 /* App.css */
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   min-height: 100%;
@@ -7,33 +8,31 @@ html, body {
   background: transparent !important;
 }
 
-
 /* Base font size */
 html {
   font-size: 62.5%;
 }
 
-
 /* Font faces */
 @font-face {
-  font-family: 'CustomInterfaceFont';
-  src: url('/fonts/HanifHandwritingV5-Regular.ttf') format('truetype');
+  font-family: "CustomInterfaceFont";
+  src: url("/fonts/HanifHandwritingV5-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'CustomBrandFont';
-  src: url('/fonts/spiritmedium.ttf') format('truetype');
+  font-family: "CustomBrandFont";
+  src: url("/fonts/spiritmedium.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'CustomTimerFont';
-  src: url('/fonts/Nunito-Regular.ttf') format('truetype');
+  font-family: "CustomTimerFont";
+  src: url("/fonts/Nunito-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -42,13 +41,10 @@ html {
 /* Global App style */
 .App {
   text-align: center;
-  font-family: 'CustomInterfaceFont', Arial, sans-serif;
+  font-family: "CustomInterfaceFont", Arial, sans-serif;
   background-color: transparent;
   min-height: 100vh;
 }
-
-
-
 
 /* New parent container to control background */
 .App-container {
@@ -58,16 +54,14 @@ html {
   transition: background-color 0.4s ease;
 }
 
-
-
 /* When in dark mode */
 .App-container.dark {
   background-color: #121212;
 }
 
-
 /* Smooth transition for dark mode */
-.App, .App * {
+.App,
+.App * {
   transition: background-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
 }
 
@@ -88,17 +82,14 @@ html {
 }
 
 .theme-toggle:hover {
-  transform: rotate(20deg);
+  transform: rotate(-30deg);
   background-color: rgba(0, 0, 0, 0.1); /* light semi-transparent circle */
 }
 
 .theme-toggle:active {
-  transform: scale(0.92) rotate(20deg);
+  transform: scale(0.92) rotate(5deg);
   background-color: rgba(0, 0, 0, 0.2); /* slightly darker on click */
 }
-
-
-
 
 /* Brand logo */
 .brandlogo {
@@ -111,7 +102,7 @@ html {
   border-radius: 50%;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease;
-  background-color:transparent;
+  background-color: transparent;
 }
 
 /* Headings */
@@ -119,14 +110,14 @@ h1 {
   font-size: 4rem;
   margin: 0 0 0.5rem 0;
   text-align: center;
-  font-family: 'CustomBrandFont', Arial, sans-serif;
+  font-family: "CustomBrandFont", Arial, sans-serif;
 }
 
 h2 {
   font-size: 4.8rem;
   margin: 2rem 0 3rem 0;
   text-align: center;
-  font-family: 'CustomTimerFont', Arial, sans-serif;
+  font-family: "CustomTimerFont", Arial, sans-serif;
 }
 
 h3 {
@@ -142,7 +133,12 @@ h3 {
   color: #e0e0e0;
 }
 
-.dark h1, .dark h2, .dark h3, .dark p, .dark li, .dark button {
+.dark h1,
+.dark h2,
+.dark h3,
+.dark p,
+.dark li,
+.dark button {
   color: #e0e0e0;
 }
 
@@ -164,13 +160,12 @@ h3 {
   color: inherit;
 }
 
-
 /* Text elements */
 .subtitle,
 .description {
   text-align: center;
   margin: 0 auto 1rem auto;
-  font-family: 'CustomInterfaceFont', Arial, sans-serif;
+  font-family: "CustomInterfaceFont", Arial, sans-serif;
 }
 
 .subtitle {
@@ -196,7 +191,7 @@ button,
   border-radius: 0.8rem;
   cursor: pointer;
   color: white;
-  font-family: 'CustomTimerFont', Arial, sans-serif;
+  font-family: "CustomTimerFont", Arial, sans-serif;
   transition: background-color 0.2s ease;
 }
 
@@ -216,7 +211,6 @@ button:active {
   transform: scale(0.92);
   background-color: rgb(48, 48, 48, 0.5); /* slightly darker on click */
 }
-
 
 .start-btn {
   background-color: #4caf50;
@@ -275,7 +269,7 @@ li {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-left: 3.5rem
+  margin-left: 3.5rem;
 }
 
 /* History items */
@@ -336,7 +330,6 @@ li {
 .delete-btn:hover {
   color: #a30000;
 }
-
 
 /* Fix for elements that should be transparent but have white background */
 .brandlogo,

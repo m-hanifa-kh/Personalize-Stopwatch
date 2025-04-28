@@ -6,7 +6,7 @@ export const initGoogleAPI = () => {
   gapi.load('client:auth2', () => {
     gapi.client.init({
       clientId: CLIENT_ID,
-      scope: 'https://www.googleapis.com/auth/drive.file',
+      scope: 'https://www.googleapis.com/auth/drive.appdata',
     });
   });
 };
