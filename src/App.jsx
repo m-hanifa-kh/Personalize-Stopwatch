@@ -1,7 +1,7 @@
 import { gapi } from "gapi-script";
 import React, { useState, useEffect } from "react";
 import { initGoogleAPI } from "../googleLogin";
-import { FaHistory, FaTrash } from "react-icons/fa";
+import { FaHistory, FaTrash, FaGoogle } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRef } from "react";
 import logo from "/logo.png";
@@ -46,17 +46,24 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [user, setUser] = useState(null);
+  const [conflictModalVisible, setConflictModalVisible] = useState(false);
+  const [fileToKeep, setFileToKeep] = useState(null); // Track which file to keep
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     const auth = gapi.auth2.getAuthInstance();
+    setLoading(true); // start spinner
     try {
       const user = await auth.signIn();
       setUser(user.getBasicProfile());
       setIsSignedIn(true);
 
-      await downloadHistoryFromDrive(); // <-- Add this line
+      await downloadHistoryFromDrive(); // download after login
     } catch (error) {
       console.error("Login error:", error);
+      alert("Login failed. Please try again.");
+    } finally {
+      setLoading(false); // stop spinner
     }
   };
 
@@ -66,6 +73,83 @@ function App() {
     auth.signOut();
     setUser(null);
     setIsSignedIn(false);
+  };
+
+  // Add conflict resolution for download
+  const handleFileConflict = (file1, file2) => {
+    const date1 = new Date(file1.modifiedTime);
+    const date2 = new Date(file2.modifiedTime);
+
+    // Show the conflict modal when the modification times differ
+    setConflictModalVisible(true);
+    // Set the conflicting files for the user to choose from
+    setFileToKeep({ file1, file2 });
+  };
+
+  // Update the history based on the selected file
+  const handleResolveConflict = async (keepFile) => {
+    const parseAndSetHistory = (content) => {
+      try {
+        const parsed = JSON.parse(content);
+        if (Array.isArray(parsed)) {
+          setHistory(parsed);
+        } else {
+          console.error("Invalid history file: not an array");
+          alert("Error: Invalid history file format.");
+        }
+      } catch (e) {
+        console.error("Failed to parse history file", e);
+        alert("Error: Failed to load history file.");
+      }
+    };
+
+    if (keepFile === "file1") {
+      parseAndSetHistory(fileToKeep.file1.content);
+    } else {
+      parseAndSetHistory(fileToKeep.file2.content);
+    }
+
+    setConflictModalVisible(false);
+
+    // ⬇️ Upload the resolved file
+    await uploadHistoryToDrive();
+  };
+
+  // Modal for conflict resolution
+  const ConflictResolutionModal = () => {
+    if (!conflictModalVisible) return null;
+
+    return (
+      <div className="modal">
+        <div className="modal-content">
+          <h2>Conflict Detected</h2>
+          <p>
+            Two history files were found with different modification times.
+            Which one would you like to keep?
+          </p>
+          <div className="modal-buttons">
+            <button
+              onClick={() => handleResolveConflict("file1")}
+              className="modal-btn"
+            >
+              Keep File 1
+            </button>
+            <button
+              onClick={() => handleResolveConflict("file2")}
+              className="modal-btn"
+            >
+              Keep File 2
+            </button>
+            <button
+              onClick={() => setConflictModalVisible(false)}
+              className="cancel-btn"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   useEffect(() => {
@@ -87,85 +171,120 @@ function App() {
 
   // upload history to drive
   const uploadHistoryToDrive = async () => {
-    const fileContent = JSON.stringify(history);
-    const file = new Blob([fileContent], { type: "application/json" });
+    setLoading(true);
+    try {
+      const fileContent = JSON.stringify(history);
+      const file = new Blob([fileContent], { type: "application/json" });
 
-    const metadata = {
-      name: "stopwatch-history.json",
-      parents: ["appDataFolder"],
-      mimeType: "application/json",
-    };
+      const metadata = {
+        name: "stopwatch-history.json",
+        parents: ["appDataFolder"],
+        mimeType: "application/json",
+      };
 
-    const accessToken = gapi.auth2
-      .getAuthInstance()
-      .currentUser.get()
-      .getAuthResponse().access_token;
+      const accessToken = gapi.auth2
+        .getAuthInstance()
+        .currentUser.get()
+        .getAuthResponse().access_token;
 
-    // First, search for existing file
-    const searchResponse = await fetch(
-      "https://www.googleapis.com/drive/v3/files?q=name=\"stopwatch-history.json\" and trashed=false and 'appDataFolder' in parents",
-      {
-        headers: new Headers({ Authorization: "Bearer " + accessToken }),
+      const searchResponse = await fetch(
+        "https://www.googleapis.com/drive/v3/files?q=name=\"stopwatch-history.json\" and trashed=false and 'appDataFolder' in parents",
+        {
+          headers: new Headers({ Authorization: "Bearer " + accessToken }),
+        }
+      );
+      const searchData = await searchResponse.json();
+
+      let url =
+        "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id";
+      let method = "POST";
+
+      if (searchData.files && searchData.files.length > 0) {
+        const fileId = searchData.files[0].id;
+        url = `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart&fields=id`;
+        method = "PATCH";
       }
-    );
-    const searchData = await searchResponse.json();
 
-    let url =
-      "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id";
-    let method = "POST";
+      const form = new FormData();
+      form.append(
+        "metadata",
+        new Blob([JSON.stringify(metadata)], { type: "application/json" })
+      );
+      form.append("file", file);
 
-    if (searchData.files && searchData.files.length > 0) {
-      const fileId = searchData.files[0].id;
-      url = `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart&fields=id`;
-      method = "PATCH"; // Update existing file
+      await fetch(url, {
+        method: method,
+        headers: new Headers({ Authorization: "Bearer " + accessToken }),
+        body: form,
+      });
+
+      console.log("History uploaded to Drive!");
+    } catch (error) {
+      console.error("Error uploading history:", error);
+      alert("Failed to upload history. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    const form = new FormData();
-    form.append(
-      "metadata",
-      new Blob([JSON.stringify(metadata)], { type: "application/json" })
-    );
-    form.append("file", file);
-
-    await fetch(url, {
-      method: method,
-      headers: new Headers({ Authorization: "Bearer " + accessToken }),
-      body: form,
-    });
-
-    console.log("History uploaded to Drive!");
   };
 
-  // Download history from Drive
+  // Download history from Drive with conflict resolution
   const downloadHistoryFromDrive = async () => {
     const accessToken = gapi.auth2
       .getAuthInstance()
       .currentUser.get()
       .getAuthResponse().access_token;
 
-    const response = await fetch(
-      'https://www.googleapis.com/drive/v3/files?q=name="stopwatch-history.json" and trashed=false and ' +
-        `'${"appDataFolder"}' in parents`,
-      {
-        headers: new Headers({ Authorization: "Bearer " + accessToken }),
-      }
-    );
-
-    const data = await response.json();
-
-    if (data.files && data.files.length > 0) {
-      const fileId = data.files[0].id;
-      const downloadResponse = await fetch(
-        `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+    try {
+      const response = await fetch(
+        'https://www.googleapis.com/drive/v3/files?q=name="stopwatch-history.json" and trashed=false and ' +
+          `'appDataFolder' in parents`,
         {
           headers: new Headers({ Authorization: "Bearer " + accessToken }),
         }
       );
-      const fileContent = await downloadResponse.json();
-      setHistory(fileContent);
-      console.log("History loaded from Drive!");
-    } else {
-      console.log("No history file found in Drive.");
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const files = data.files;
+
+      if (files.length === 2) {
+        // If 2 files found, resolve conflict
+        const downloadFile = async (file) => {
+          const res = await fetch(
+            `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`,
+            {
+              headers: new Headers({ Authorization: "Bearer " + accessToken }),
+            }
+          );
+          const content = await res.text();
+          return { ...file, content };
+        };
+
+        const fullFile1 = await downloadFile(files[0]);
+        const fullFile2 = await downloadFile(files[1]);
+
+        handleFileConflict(fullFile1, fullFile2);
+      } else if (files.length === 1) {
+        // If only 1 file, simply download it
+        const downloadResponse = await fetch(
+          `https://www.googleapis.com/drive/v3/files/${files[0].id}?alt=media`,
+          {
+            headers: new Headers({ Authorization: "Bearer " + accessToken }),
+          }
+        );
+        const fileContent = await downloadResponse.json();
+        setHistory(fileContent);
+        console.log("History loaded from Drive!");
+      } else {
+        // No file found
+        console.log("No history file found in Drive.");
+      }
+    } catch (error) {
+      console.error("Error fetching history from Drive:", error);
+      alert("Failed to download history. Please check your connection.");
     }
   };
 
@@ -237,20 +356,6 @@ function App() {
       <div className={`App-container ${isDarkMode ? "dark" : ""}`}>
         <img src={logo} alt="Logo" className="brandlogo" />
         <div className="App">
-          <div className="google-login-section">
-            {!isSignedIn ? (
-              <button onClick={handleLogin} className="login-btn">
-                Login with Google
-              </button>
-            ) : (
-              <div>
-                <p>Welcome, {user?.getName()}!</p>
-                <button onClick={handleLogout} className="logout-btn">
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
           <h1>Tarot Insight</h1>
           <h2 className="subtitle"> Psychological Tarot Reading</h2>
           <p className="description">
@@ -338,7 +443,14 @@ function App() {
                     style={{ overflow: "hidden", marginTop: "1rem" }}
                   >
                     {history.map((entry) => (
-                      <li key={entry.id} className="history-item-container">
+                      <motion.li
+                        key={entry.id}
+                        className="history-item-container"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.4 }}
+                      >
                         {/* History entry code Start here */}
                         {editingId === entry.id ? (
                           <input
@@ -378,20 +490,61 @@ function App() {
                             </button>
                           </div>
                         )}
-                      </li>
+                      </motion.li>
                     ))}
                     {/* history entry code End*/}
                   </motion.ul>
                 )}
               </AnimatePresence>{" "}
               {/* Ends the animation */}
+              {/* Download / Upload History Buttons */}
+              <div className="history-buttons">
+                <button
+                  onClick={downloadHistoryFromDrive}
+                  className="download-btn"
+                >
+                  Download History
+                </button>
+                <button onClick={uploadHistoryToDrive} className="upload-btn">
+                  Upload History
+                </button>
+              </div>
+              <div className="google-login-section">
+                {!isSignedIn ? (
+                  <button onClick={handleLogin} className="login-btn">
+                    <FaGoogle /> Login with Google
+                  </button>
+                ) : (
+                  <div>
+                    <div className="google-profile">
+                      <img
+                        src={user?.getImageUrl()}
+                        alt={`${user?.getName()}'s profile picture`}
+                        className="profile-pic"
+                      />
+                      <p>Welcome, {user?.getName()}!</p>
+                    </div>
+
+                    <button onClick={handleLogout} className="logout-btn">
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>{" "}
             {/* Ends .history-section */}
           </div>{" "}
           {/* This one closes the buttons wrapper */}
         </div>{" "}
         {/* This one closes the .App inner */}
-      </div>{" "}
+        {loading && (
+          <div className="loading-spinner">
+            <div className="spinner"></div>
+            <p>Loading...</p>
+          </div>
+        )}
+        {conflictModalVisible && <ConflictResolutionModal />}
+      </div>
       {/* This one closes the .App-container */}
     </>
   );
