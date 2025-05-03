@@ -1,7 +1,7 @@
 import { gapi } from "gapi-script";
 import React, { useState, useEffect } from "react";
 import { initGoogleAPI } from "../googleLogin";
-import { FaHistory, FaTrash, FaGoogle } from "react-icons/fa";
+import { FaHistory, FaTrash, FaGoogle, FaChevronDown } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRef } from "react";
 import logo from "/logo.png";
@@ -36,6 +36,8 @@ function App() {
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [history, setHistory] = useState([]);
+  const [currentLaps, setCurrentLaps] = useState([]);
+  const [expandedHistoryItem, setExpandedHistoryItem] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
   const [showHistory, setShowHistory] = useState(true);
@@ -47,7 +49,7 @@ function App() {
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [conflictModalVisible, setConflictModalVisible] = useState(false);
-  const [fileToKeep, setFileToKeep] = useState(null); // Track which file to keep
+  const [fileToKeep, setFileToKeep] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -160,7 +162,14 @@ function App() {
   useEffect(() => {
     const savedHistory = localStorage.getItem("stopwatch-history");
     if (savedHistory) {
-      setHistory(JSON.parse(savedHistory));
+      const parsedHistory = JSON.parse(savedHistory);
+      // Ensure each history item has a laps array for consistency
+      const historyWithLaps = parsedHistory.map((item) => ({
+        ...item,
+        laps: item.laps || [], // Add empty laps array if missing
+        isExpanded: item.isExpanded || false, // Add isExpanded flag if missing
+      }));
+      setHistory(historyWithLaps);
     }
   }, []);
 
@@ -266,7 +275,33 @@ function App() {
         const fullFile1 = await downloadFile(files[0]);
         const fullFile2 = await downloadFile(files[1]);
 
-        handleFileConflict(fullFile1, fullFile2);
+        // Parse content and ensure laps array exists for conflict resolution files
+        try {
+          fullFile1.parsedContent = JSON.parse(fullFile1.content).map(
+            (item) => ({
+              ...item,
+              laps: item.laps || [],
+              isExpanded: item.isExpanded || false,
+            })
+          );
+        } catch (e) {
+          console.error("Failed to parse file1 content:", e);
+          fullFile1.parsedContent = [];
+        }
+        try {
+          fullFile2.parsedContent = JSON.parse(fullFile2.content).map(
+            (item) => ({
+              ...item,
+              laps: item.laps || [],
+              isExpanded: item.isExpanded || false,
+            })
+          );
+        } catch (e) {
+          console.error("Failed to parse file2 content:", e);
+          fullFile2.parsedContent = [];
+        }
+        //
+        handleFileConflict(fullFile1, fullFile2); // Pass full file objects including parsed content
       } else if (files.length === 1) {
         // If only 1 file, simply download it
         const downloadResponse = await fetch(
@@ -276,7 +311,13 @@ function App() {
           }
         );
         const fileContent = await downloadResponse.json();
-        setHistory(fileContent);
+        // Ensure laps array exists for the downloaded history
+        const historyWithLaps = fileContent.map((item) => ({
+          ...item,
+          laps: item.laps || [], // Add empty laps array if missing
+          isExpanded: item.isExpanded || false, // Add isExpanded flag if missing
+        }));
+        setHistory(historyWithLaps);
         console.log("History loaded from Drive!");
       } else {
         // No file found
@@ -320,6 +361,42 @@ function App() {
     const getHours = `0${hours}`.slice(-2);
 
     return `${getHours}:${getMinutes}:${getSeconds}`;
+  };
+
+  // Function to toggle the expanded state of a history item
+  const toggleHistoryItem = (id) => {
+    // If the clicked item is already expanded, collapse it (set to null)
+    // Otherwise, expand the clicked item
+    setExpandedHistoryItem(expandedHistoryItem === id ? null : id);
+  };
+
+  // Function to record a lap
+  const handleLap = () => {
+    // Only record a lap if the stopwatch is running
+    if (isRunning) {
+      const timeAtLap = time; // Capture the total time at the moment the lap button is clicked
+      const timestamp = getCurrentTimestamp(); // Get the current date and time
+
+      // Calculate the duration of this specific lap
+      // If it's the first lap, duration is the timeAtLap.
+      // Otherwise, it's timeAtLap minus the time of the previous lap.
+      const previousLapTime =
+        currentLaps.length > 0
+          ? currentLaps[currentLaps.length - 1].timeAtLap
+          : 0;
+      const lapDuration = timeAtLap - previousLapTime;
+
+      // Create a lap object
+      const newLap = {
+        id: Date.now() + currentLaps.length, // Generate a unique ID for the lap
+        timeAtLap: timeAtLap, // Store the total time when the lap was recorded
+        duration: formatDuration(Math.floor(lapDuration / 1000)), // Format the duration of this lap
+        timestamp: timestamp, // Store the timestamp when the lap was recorded
+      };
+
+      // Add the new lap to the currentLaps array
+      setCurrentLaps((prevLaps) => [...prevLaps, newLap]);
+    }
   };
 
   useEffect(() => {
@@ -379,15 +456,26 @@ function App() {
               </button>
             )}
             {isRunning && (
-              <button
-                className="pause-btn"
-                onClick={() => {
-                  setIsRunning(false);
-                  elapsedRef.current = time; // save elapsed time
-                }}
-              >
-                Pause
-              </button>
+              <>
+                {" "}
+                {/* Use a fragment to group multiple buttons */}
+                {/* Add the Lap button here */}
+                <button
+                  className="lap-btn" // Assign a CSS class for styling
+                  onClick={handleLap} // We will create this function next
+                >
+                  Lap
+                </button>
+                <button
+                  className="pause-btn"
+                  onClick={() => {
+                    setIsRunning(false);
+                    elapsedRef.current = time; // save elapsed time
+                  }}
+                >
+                  Pause
+                </button>
+              </>
             )}
             {!isRunning && time !== 0 && (
               <button className="start-btn" onClick={() => setIsRunning(true)}>
@@ -399,23 +487,77 @@ function App() {
                 className="reset-btn"
                 onClick={() => {
                   const now = Date.now();
-                  const actualElapsed = now - (startTimeRef.current ?? now);
+                  // Calculate the actual elapsed time up to the reset
+                  const actualElapsed = startTimeRef.current
+                    ? now - startTimeRef.current
+                    : elapsedRef.current;
+
+                  // Before saving, calculate the duration for the very last lap
+                  // If there are laps, the last lap duration is the total time minus the time of the second-to-last lap.
+                  // If there are no laps, the session duration is the "first lap" duration.
+                  const lapsWithFinalDuration = currentLaps.map(
+                    (lap, index) => {
+                      const previousTime =
+                        index === 0 ? 0 : currentLaps[index - 1].timeAtLap;
+                      const duration = lap.timeAtLap - previousTime;
+                      return {
+                        ...lap, // Keep existing lap properties (id, timeAtLap, timestamp)
+                        duration: formatDuration(Math.floor(duration / 1000)), // Recalculate and format duration
+                      };
+                    }
+                  );
+
+                  // If there were no laps recorded, add the total time as a single "lap" entry in the history for consistency
+                  if (lapsWithFinalDuration.length === 0 && actualElapsed > 0) {
+                    lapsWithFinalDuration.push({
+                      id: Date.now(), // Use a new ID for this "pseudo-lap"
+                      timeAtLap: actualElapsed,
+                      duration: formatDuration(
+                        Math.floor(actualElapsed / 1000)
+                      ),
+                      timestamp: getCurrentTimestamp(),
+                    });
+                  } else if (lapsWithFinalDuration.length > 0) {
+                    // Calculate the duration for the very last recorded lap
+                    const lastLapTimeAt =
+                      lapsWithFinalDuration[lapsWithFinalDuration.length - 1]
+                        .timeAtLap;
+                    const secondLastLapTimeAt =
+                      lapsWithFinalDuration.length > 1
+                        ? lapsWithFinalDuration[
+                            lapsWithFinalDuration.length - 2
+                          ].timeAtLap
+                        : 0;
+                    const lastLapActualDuration =
+                      actualElapsed - secondLastLapTimeAt;
+                    // Update the last lap entry with the correct final duration
+                    lapsWithFinalDuration[
+                      lapsWithFinalDuration.length - 1
+                    ].duration = formatDuration(
+                      Math.floor(lastLapActualDuration / 1000)
+                    );
+                  }
 
                   setHistory((prev) => [
                     ...prev,
                     {
-                      id: Date.now(),
-                      name: "Untitled",
-                      time: formatDuration(Math.floor(actualElapsed / 1000)),
-                      timestamp: getCurrentTimestamp(),
+                      id: Date.now(), // Unique ID for the session
+                      name: "Untitled", // Default name
+                      time: formatDuration(Math.floor(actualElapsed / 1000)), // Total session time
+                      timestamp: getCurrentTimestamp(), // Timestamp when session ended
+                      laps: lapsWithFinalDuration, // Include the array of laps with calculated durations
+                      isExpanded: false, // Add a flag to control expansion state for this history item
                     },
                   ]);
+
+                  // Reset state variables for the next session
                   setTime(0);
                   setDisplayTime(0);
                   elapsedRef.current = 0;
                   setIsRunning(false);
                   setEditingId(null);
                   setEditingText("");
+                  setCurrentLaps([]); // Clear the current laps
                 }}
               >
                 Reset
@@ -471,11 +613,32 @@ function App() {
                         ) : (
                           <div
                             className="history-item"
+                            // Add onClick to toggle laps, but not when editing
+                            onClick={() =>
+                              editingId !== entry.id &&
+                              toggleHistoryItem(entry.id)
+                            }
                             onDoubleClick={() => {
                               setEditingId(entry.id);
                               setEditingText(entry.name);
                             }}
                           >
+                            {/* Add the toggle button */}
+                            <button
+                              className={`history-toggle-arrow ${
+                                expandedHistoryItem === entry.id
+                                  ? "rotate-icon"
+                                  : ""
+                              }`}
+                              aria-label="Toggle Laps"
+                              // Prevent click from propagating to the parent div's onClick when clicking the arrow
+                              onClick={(e) => {
+                                e.stopPropagation(); // Stop event propagation
+                                toggleHistoryItem(entry.id);
+                              }}
+                            >
+                              <FaChevronDown />
+                            </button>
                             <div className="history-text">
                               <strong>{entry.name}</strong> — {entry.time}
                               <br />
@@ -490,6 +653,19 @@ function App() {
                             </button>
                           </div>
                         )}
+                        {/* Conditionally render laps */}
+                        {expandedHistoryItem === entry.id &&
+                          entry.laps &&
+                          entry.laps.length > 0 && (
+                            <ul className="lap-list">
+                              {entry.laps.map((lap, index) => (
+                                <li key={lap.id} className="lap-item">
+                                  Lap {index + 1}: {lap.duration} (
+                                  {lap.timestamp})
+                                </li>
+                              ))}
+                            </ul>
+                          )}
                       </motion.li>
                     ))}
                     {/* history entry code End*/}
