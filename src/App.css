@@ -1,10 +1,8 @@
 @import "tailwindcss";
+@import "tailwindcss/preflight";
 
 /* Global App style */
-@tailwind base;
-@tailwind components;
 @tailwind utilities;
-
 
 /* Base styles for html and body */
 @layer base {
@@ -129,7 +127,7 @@ h3 {
 .subtitle,
 .description {
   @apply text-center mx-auto mb-[1rem] font-sans;
-    font-family: "custom-interface", sans-serif;
+  font-family: "custom-interface", sans-serif;
 }
 
 .subtitle {
@@ -208,7 +206,7 @@ li {
 }
 
 .history-list {
-  @apply overflow-hidden mt-[1rem] flex flex-col items-center ml-[3.5rem];
+  @apply overflow-hidden mt-[1rem] flex flex-col items-center ml-[0.05rem];
 }
 
 .history-item {
@@ -230,6 +228,23 @@ li {
 .history-item-container {
   @apply flex justify-between items-center w-full max-w-[40rem] py-[0.4rem] px-[0.8rem] m-auto mb-[1rem] rounded-[0.8rem] transition-colors duration-200;
 }
+
+.history-item-container .history-toggle-arrow {
+  opacity: 0;
+  background: none;
+  @apply text-[#333];
+}
+
+.history-item-container:hover .history-toggle-arrow {
+  opacity: 1;
+  @apply bg-[rgba(0,0,0,0.1)];
+
+}
+
+.history-item-container .history-toggle-arrow.dark {
+  @apply text-[#e0e0e0];
+}
+
 
 .delete-btn {
   @apply bg-transparent border-none cursor-pointer text-[1.8rem] text-[#eb2d2d] opacity-0 transition-opacity duration-200;

@@ -545,24 +545,27 @@ function App() {
               <ul className="current-laps-list">
                 {currentLaps.map((lap, index) => (
                   <li key={lap.id} className="current-lap-item">
-                    {editingLapId === lap.id ? (
-                      <input
-                         type="text"
-                        value={lap.name}
-                        onChange={(e) => {
-                          const updatedLaps = [...currentLaps];
-                          updatedLaps[index].name = e.target.value;
-                          setCurrentLaps(updatedLaps);
-                        }}
-                        onBlur={() => setEditingLapId(null)}
-                        autoFocus
-                      />
+                     {editingLapId === lap.id ? (
+                          <input
+                            type="text"
+                            value={lap.name}
+                            onChange={(e) => {
+                              const updatedLaps = [...currentLaps];
+                              updatedLaps[index].name = e.target.value;
+                              setCurrentLaps(updatedLaps);
+                            }}
+                            onBlur={() => setEditingLapId(null)}
+                            autoFocus
+                          />
                         ) : (
-                        <span onDoubleClick={() => setEditingLapId(lap.id)}> {lap.name} : {lap.formattedTime} </span>)}
+                          <span onDoubleClick={() => setEditingLapId(lap.id)}>
+                            {lap.name} : {lap.formattedTime}
+                          </span>
+                        )}
                   </li>
                 ))}
               </ul>
-            </div>
+              </div>
           )}
           </div>
 
@@ -600,83 +603,94 @@ function App() {
                         transition={{ duration: 0.4 }}
                       >
                         {/* History entry code Start here */}
-                        {editingId === entry.id ? (
-                          <input
-                            type="text"
-                            value={editingText}
-                            onChange={(e) => setEditingText(e.target.value)}
-                            onBlur={() => {
-                              const updated = history.map((item) =>
-                                item.id === entry.id
-                                  ? { ...item, name: editingText }
-                                  : item
-                              );
-                              setHistory(updated);
-                              setEditingId(null);
-                            }}
-                            autoFocus
-                          />
-                        ) : (
                           <div
                             className="history-item"
-                            // Add onClick to toggle laps, but not when editing
-                            onClick={() =>
-                              editingId !== entry.id &&
-                              toggleHistoryItem(entry.id)
-                            }
-                            onDoubleClick={() => {
-                              setEditingId(entry.id);
-                              setEditingText(entry.name);
-                            }}
+                            onClick={() => editingId !== entry.id && toggleHistoryItem(entry.id)}
+                            onDoubleClick={() => setEditingId(entry.id)}
                           >
-                            {/* Add the toggle button */}
-                            <button
-                              className={`history-toggle-arrow ${
-                                expandedHistoryItem === entry.id
-                                  ? "rotate-icon"
-                                  : ""
-                              }`}
-                              aria-label="Toggle Laps"
-                              // Prevent click from propagating to the parent div's onClick when clicking the arrow
-                              onClick={(e) => {
-                                e.stopPropagation(); // Stop event propagation
-                                toggleHistoryItem(entry.id);
+                          {editingId === entry.id ? (
+                            <input
+                              type="text"
+                              value={editingText}
+                              onChange={(e) => setEditingText(e.target.value)}
+                              onBlur={() => {
+                                const updated = history.map((item) => item.id === entry.id ? { ...item, name: editingText }
+                                    : item
+                                );
+                                setHistory(updated);
+                                setEditingId(null);
                               }}
-                            >
-                              <FaChevronDown />
-                            </button>
-                            <div className="history-text">
-                              <strong>{entry.name}</strong> — {entry.time}
-                              <br />
-                              <span>{entry.timestamp}</span>
-                            </div>
-                            <button
-                              onClick={() => deleteHistoryItem(entry.id)}
-                              className="delete-btn"
-                              aria-label="Delete History Item"
-                            >
-                              <FaTrash />
-                            </button>
-                          </div>
-                        )}
+                              autoFocus
+                            />
+                          ) : (
+                            <>
+                              {/* Add the toggle button */}
+                              <button
+                                  className={`history-toggle-arrow ${
+                                      expandedHistoryItem === entry.id
+                                          ? "rotate-icon"
+                                          : ""
+                                  }`}
+                                  aria-label="Toggle Laps"
+                                  // Prevent click from propagating to the parent div's onClick when clicking the arrow
+                                  onClick={(e) => {
+                                      e.stopPropagation(); // Stop event propagation
+                                      toggleHistoryItem(entry.id);
+                                  }}
+                              >
+                                  <FaChevronDown/>
+                              </button>
+                              <div className="history-text" onDoubleClick={() => setEditingText(entry.name)}>
+                                  <strong>{entry.name}</strong>
+                                  — {entry.time}
+                                  <br/>
+                                  <span>{entry.timestamp}</span>
+                              </div>
+                              <button
+                                onClick={() => deleteHistoryItem(entry.id)}
+                                className="delete-btn"
+                                aria-label="Delete History Item"
+                              >
+                                <FaTrash />
+                              </button>
+                            </>
+                              )}
+                        </div>
                         {/* Conditionally render laps */}
                         {expandedHistoryItem === entry.id &&
+
                           entry.laps &&
                           entry.laps.length > 0 && (
                             <ul className="lap-list">
+                              {/* Conditionally render laps */}
                               {entry.laps.map((lap, index) => (
                                 <li key={lap.id} className="lap-item">
-                                 {lap.name} : {formatTime(lap.time, false)}
-                                </li>   
-                                         
-
+                                  <>
+                                    {editingLapId === lap.id ? (
+                                      <input
+                                        type="text"
+                                        value={lap.name}
+                                        onChange={(e) => {
+                                          const updatedHistory = history.map((item) => item.id === expandedHistoryItem ? { ...item, laps: item.laps.map((l) => l.id === lap.id ? { ...l, name: e.target.value } : l) } : item);
+                                          setHistory(updatedHistory);
+                                        }}
+                                        onBlur={() => setEditingLapId(null)}
+                                        autoFocus
+                                      />
+                                    ) : (
+                                      <span onDoubleClick={() => setEditingLapId(lap.id)}>{lap.name} : {formatTime(lap.time, false)}</span>
+                                    )}
+                                  </>
+                                </li>
                               ))}
                             </ul>
-                          )}
-                      </motion.li>
+                          )
+                        }
+                     </motion.li>
+                        // history entry code End
                     ))}
-                    {/* history entry code End*/}
-                  </motion.ul>
+                   </motion.ul>
+
                 )}
               </AnimatePresence>{" "}
               {/* Ends the animation */}
