@@ -19,8 +19,9 @@
 }
 
 /* Font faces remain as-is since Tailwind doesn't handle them directly */
+/* Font face for custom interface */
 @font-face {
-  font-family: "CustomInterfaceFont";
+  font-family: "custom-interface";
   src: url("/fonts/HanifHandwritingV5-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
@@ -28,7 +29,7 @@
 }
 
 @font-face {
-  font-family: "CustomBrandFont";
+  font-family: "custom-brand";
   src: url("/fonts/spiritmedium.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
@@ -36,7 +37,7 @@
 }
 
 @font-face {
-  font-family: "CustomTimerFont";
+  font-family: "custom-timer";
   src: url("/fonts/Nunito-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
@@ -45,12 +46,13 @@
 
 /* Global App style */
 .App {
-  @apply text-center font-sans font["CustomInterfaceFont"] bg-transparent min-h-screen;
+  @apply text-center font-sans bg-transparent min-h-screen;
+  font-family: "custom-interface", sans-serif;
 }
 
 /* App container */
 .App-container {
-  @apply pt-[3rem] min-h-screen bg-[#f9f9f9] transition-background duration-400 ease-in-out;
+  @apply pt-[3rem] min-h-screen bg-[#f9f9f9] transition duration-400 ease-in-out;
 }
 
 .App-container.dark {
@@ -65,15 +67,15 @@
 
 /* Theme toggle */
 .theme-toggle {
-  @apply cursor-pointer text-[2.4rem] transition-transform duration-200 ease-in-out transition-bg inline-flex items-center justify-center text-[#333] m-[1rem] w-[5rem] h-[5rem] rounded-full bg-transparent;
+  @apply cursor-pointer text-[2.4rem] transition-transform duration-200 ease-in-out transition inline-flex items-center justify-center text-[#333] m-[1rem] w-[5rem] h-[5rem] rounded-full bg-transparent;
 }
 
 .theme-toggle:hover {
-  @apply transform -rotate-30 bg-opacity-10 bg-black;
+  @apply transform -rotate-30 bg-[rgba(0,0,0,0.1)];
 }
 
 .theme-toggle:active {
-  @apply transform scale-92 rotate-5 bg-opacity-20 bg-black;
+  @apply transform scale-92 rotate-5 bg-[rgba(48,48,48,0.5)];
 }
 
 /* Brand logo */
@@ -83,11 +85,13 @@
 
 /* Headings */
 h1 {
-  @apply text-[4rem] mb-[0.5rem] text-center font-sans font["CustomBrandFont"];
+  @apply text-[4rem] mb-[0.5rem] text-center font-sans;
+  font-family: "custom-brand", sans-serif;
 }
 
 h2 {
-  @apply text-[4.8rem] my-[2rem] mt-0 mb-[3rem] text-center font-sans font["CustomTimerFont"];
+  @apply text-[4.8rem] my-[2rem] mt-0 mb-[3rem] text-center font-sans;
+  font-family: "custom-timer", sans-serif;
 }
 
 h3 {
@@ -124,7 +128,8 @@ h3 {
 /* Text elements */
 .subtitle,
 .description {
-  @apply text-center mx-auto mb-[1rem] font-sans font["CustomInterfaceFont"];
+  @apply text-center mx-auto mb-[1rem] font-sans;
+    font-family: "custom-interface", sans-serif;
 }
 
 .subtitle {
@@ -140,7 +145,8 @@ button,
 .start-btn,
 .pause-btn,
 .reset-btn {
-  @apply text-[1.6rem] py-[0.8rem] px-[1.5rem] m-[0.5rem] rounded-[0.8rem] cursor-pointer text-white font-sans font["CustomTimerFont"] transition-colors duration-200;
+  @apply text-[1.6rem] py-[0.8rem] px-[1.5rem] m-[0.5rem] rounded-[0.8rem] cursor-pointer text-white font-sans transition-colors duration-200;
+  font-family: "custom-timer", sans-serif;
 }
 
 button {
@@ -156,7 +162,7 @@ button:focus {
 }
 
 button:active {
-  @apply scale-92 bg-opacity-50 bg-[rgb(48,48,48)];
+  @apply scale-92 rotate-5 bg-[rgba(48,48,48,0.5)];
 }
 
 .start-btn {
