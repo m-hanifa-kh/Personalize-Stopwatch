@@ -32,6 +32,19 @@ function formatDuration(time) {
   return display.trim();
 }
 
+function formatTime(time, showMilliseconds = true) {
+  const totalSeconds = Math.floor(time / 1000); // Total seconds
+  const milliseconds = time % 1000; // Milliseconds
+  const seconds = totalSeconds % 60; // Remaining seconds
+  const minutes = Math.floor(totalSeconds / 60) % 60; // Remaining minutes
+  const hours = Math.floor(totalSeconds / 3600); // Hours
+
+  const getSeconds = `0${seconds}`.slice(-2);
+  const getMinutes = `0${minutes}`.slice(-2);
+  const getHours = `0${hours}`.slice(-2);
+  const getMilliseconds = String(milliseconds).padStart(2, '0').slice(0, 2);
+  return `${getHours}:${getMinutes}:${getSeconds}${showMilliseconds ? '.' + getMilliseconds : ''}`;
+}
 function App() {
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -40,6 +53,7 @@ function App() {
   const [expandedHistoryItem, setExpandedHistoryItem] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
+  const [editingLapId, setEditingLapId] = useState(null);
   const [showHistory, setShowHistory] = useState(true);
   const startTimeRef = useRef(null);
   const animationFrameRef = useRef(null);
@@ -350,19 +364,6 @@ function App() {
     };
   }, [isRunning, time]);
 
-  const formatTime = (time) => {
-    const totalSeconds = Math.floor(time / 1000);
-    const seconds = totalSeconds % 60;
-    const minutes = Math.floor(totalSeconds / 60) % 60;
-    const hours = Math.floor(totalSeconds / 3600);
-
-    const getSeconds = `0${seconds}`.slice(-2);
-    const getMinutes = `0${minutes}`.slice(-2);
-    const getHours = `0${hours}`.slice(-2);
-
-    return `${getHours}:${getMinutes}:${getSeconds}`;
-  };
-
   // Function to toggle the expanded state of a history item
   const toggleHistoryItem = (id) => {
     // If the clicked item is already expanded, collapse it (set to null)
@@ -371,30 +372,22 @@ function App() {
   };
 
   // Function to record a lap
-  const handleLap = () => {
+    const handleLap = () => {
     // Only record a lap if the stopwatch is running
     if (isRunning) {
-      const timeAtLap = time; // Capture the total time at the moment the lap button is clicked
-      const timestamp = getCurrentTimestamp(); // Get the current date and time
+      const currentTime = time; // Current time when the lap button is clicked
+      const lapIndex = currentLaps.length + 1; // Number of the new lap
+      const defaultName = `Lap ${lapIndex}`; // Generate a default name like "Lap 1", "Lap 2", etc.
+      const formattedTime = formatTime(currentTime);
 
-      // Calculate the duration of this specific lap
-      // If it's the first lap, duration is the timeAtLap.
-      // Otherwise, it's timeAtLap minus the time of the previous lap.
-      const previousLapTime =
-        currentLaps.length > 0
-          ? currentLaps[currentLaps.length - 1].timeAtLap
-          : 0;
-      const lapDuration = timeAtLap - previousLapTime;
-
-      // Create a lap object
+      // Create a lap object with time, default name, and id
       const newLap = {
-        id: Date.now() + currentLaps.length, // Generate a unique ID for the lap
-        timeAtLap: timeAtLap, // Store the total time when the lap was recorded
-        duration: formatDuration(Math.floor(lapDuration / 1000)), // Format the duration of this lap
-        timestamp: timestamp, // Store the timestamp when the lap was recorded
+        id: Date.now(), // Generate a unique ID for each lap
+        name: defaultName, // Default lap name
+        time: currentTime, // Time when the lap was recorded
+        formattedTime: formattedTime, //formatted time to display on screen
       };
 
-      // Add the new lap to the currentLaps array
       setCurrentLaps((prevLaps) => [...prevLaps, newLap]);
     }
   };
@@ -407,14 +400,14 @@ function App() {
       const elapsed = startTimeRef.current
         ? Date.now() - startTimeRef.current
         : 0;
-      document.title = formatTime(elapsed);
+      document.title = formatTime(elapsed, false);
 
       intervalId = setInterval(() => {
         const elapsed = startTimeRef.current
           ? Date.now() - startTimeRef.current
           : 0;
-        document.title = formatTime(elapsed);
-      }, 1000);
+        document.title = formatTime(elapsed, false);
+      }, 100);
     } else {
       document.title = "Tarot Insight";
     }
@@ -428,6 +421,71 @@ function App() {
     setHistory((prevHistory) => prevHistory.filter((item) => item.id !== id));
   };
 
+    const handleStop = () => {
+    const actualElapsed = elapsedRef.current;
+
+    // Before saving, calculate the duration for the very last lap
+    // If there are laps, the last lap duration is the total time minus the time of the second-to-last lap.
+    // If there are no laps, the session duration is the "first lap" duration.
+    const lapsWithFinalDuration = currentLaps.map((lap, index) => {
+      const previousTime =
+        index === 0 ? 0 : currentLaps[index - 1].time;
+      const duration = lap.time - previousTime;
+      return {
+        ...lap, // Keep existing lap properties (id, timeAtLap, timestamp)
+        duration: formatDuration(Math.floor(duration / 1000)),
+      };
+    });
+
+    // If there were no laps recorded, add the total time as a single "lap" entry in the history for consistency
+    if (lapsWithFinalDuration.length === 0 && actualElapsed > 0) {
+      lapsWithFinalDuration.push({
+        id: Date.now(), // Use a new ID for this "pseudo-lap"
+        name: "Lap 1",
+        time: actualElapsed,
+        duration: formatDuration(Math.floor(actualElapsed / 1000)),
+        timestamp: getCurrentTimestamp(),
+      });
+    } else if (lapsWithFinalDuration.length > 0) {
+      // Calculate the duration for the very last recorded lap
+      const lastLapTime =
+        lapsWithFinalDuration[lapsWithFinalDuration.length - 1].time;
+      const secondLastLapTime =
+        lapsWithFinalDuration.length > 1
+          ? lapsWithFinalDuration[lapsWithFinalDuration.length - 2].time
+          : 0;
+      const lastLapActualDuration = actualElapsed - secondLastLapTime;
+      // Update the last lap entry with the correct final duration
+      lapsWithFinalDuration[lapsWithFinalDuration.length - 1].duration =
+        formatDuration(Math.floor(lastLapActualDuration / 1000));
+    }
+
+    setHistory((prev) => [
+      ...prev,
+      {
+        id: Date.now(), // Unique ID for the session
+        name: "Untitled", // Default name
+        time: formatDuration(Math.floor(actualElapsed / 1000)), // Total session time
+        timestamp: getCurrentTimestamp(), // Timestamp when session ended
+        laps: lapsWithFinalDuration, // Include the array of laps with calculated durations
+        isExpanded: false, // Add a flag to control expansion state for this history item
+      },
+    ]);
+    console.log("History after reset:", history);
+
+    // Reset state variables for the next session
+    setTime(0);
+    setDisplayTime(0);
+    elapsedRef.current = 0;
+    setIsRunning(false);
+    setEditingId(null);
+    setEditingText("");
+    setCurrentLaps([]);
+  };
+
+
+
+
   return (
     <>
       <div className={`App-container ${isDarkMode ? "dark" : ""}`}>
@@ -436,133 +494,81 @@ function App() {
           <h1>Tarot Insight</h1>
           <h2 className="subtitle"> Psychological Tarot Reading</h2>
           <p className="description">
-            Mengungkap pesan semesta <br />
-            by @mhanifakh
+            Mengungkap pesan semesta <br /> by @mhanifakh
           </p>
           <div className="toggle-theme">
-            <button
-              onClick={() => setIsDarkMode((prev) => !prev)}
-              className="theme-toggle"
-              aria-label="Toggle Theme"
-            >
-              {isDarkMode ? "🌞" : "🌙"}
-            </button>
-          </div>
-          <h2>{formatTime(displayTime)}</h2>
-          <div>
+        <button onClick={() => setIsDarkMode((prev) => !prev)} className="theme-toggle" aria-label="Toggle Theme"> {isDarkMode ? "🌞" : "🌙"}</button>
+
+                  </div>
+         
+            <h2>{formatTime(displayTime)}</h2>
+          <div className="buttons-container">
             {!isRunning && time === 0 && (
               <button className="start-btn" onClick={() => setIsRunning(true)}>
                 Start
               </button>
-            )}
+            )}            
             {isRunning && (
               <>
                 {" "}
                 {/* Use a fragment to group multiple buttons */}
                 {/* Add the Lap button here */}
-                <button
-                  className="lap-btn" // Assign a CSS class for styling
-                  onClick={handleLap} // We will create this function next
-                >
+                <button className="lap-btn" onClick={handleLap}>
                   Lap
                 </button>
-                <button
+                 <button
                   className="pause-btn"
-                  onClick={() => {
-                    setIsRunning(false);
-                    elapsedRef.current = time; // save elapsed time
-                  }}
-                >
-                  Pause
+                    onClick={() => {
+                      setIsRunning(false);
+                      elapsedRef.current = time; // save elapsed time
+                      setEditingId(null);
+                      setEditingText("");
+                    }}>
+                 Pause
                 </button>
-              </>
-            )}
-            {!isRunning && time !== 0 && (
+                <button
+                  className="stop-btn"
+                  onClick={handleStop}
+                > Stop
+                 </button>
+               
+            </>
+               )}
+             {!isRunning && time !== 0 && (
               <button className="start-btn" onClick={() => setIsRunning(true)}>
                 Resume
               </button>
             )}
-            {time !== 0 && (
-              <button
-                className="reset-btn"
-                onClick={() => {
-                  const now = Date.now();
-                  // Calculate the actual elapsed time up to the reset
-                  const actualElapsed = startTimeRef.current
-                    ? now - startTimeRef.current
-                    : elapsedRef.current;
+             {currentLaps.length > 0 && (
+            <div className="current-laps-section">
+              <h3>Current Laps</h3>
+              <ul className="current-laps-list">
+                {currentLaps.map((lap, index) => (
+                  <li key={lap.id} className="current-lap-item">
+                    {editingLapId === lap.id ? (
+                      <input
+                         type="text"
+                        value={lap.name}
+                        onChange={(e) => {
+                          const updatedLaps = [...currentLaps];
+                          updatedLaps[index].name = e.target.value;
+                          setCurrentLaps(updatedLaps);
+                        }}
+                        onBlur={() => setEditingLapId(null)}
+                        autoFocus
+                      />
+                        ) : (
+                        <span onDoubleClick={() => setEditingLapId(lap.id)}> {lap.name} : {lap.formattedTime} </span>)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          </div>
 
-                  // Before saving, calculate the duration for the very last lap
-                  // If there are laps, the last lap duration is the total time minus the time of the second-to-last lap.
-                  // If there are no laps, the session duration is the "first lap" duration.
-                  const lapsWithFinalDuration = currentLaps.map(
-                    (lap, index) => {
-                      const previousTime =
-                        index === 0 ? 0 : currentLaps[index - 1].timeAtLap;
-                      const duration = lap.timeAtLap - previousTime;
-                      return {
-                        ...lap, // Keep existing lap properties (id, timeAtLap, timestamp)
-                        duration: formatDuration(Math.floor(duration / 1000)), // Recalculate and format duration
-                      };
-                    }
-                  );
 
-                  // If there were no laps recorded, add the total time as a single "lap" entry in the history for consistency
-                  if (lapsWithFinalDuration.length === 0 && actualElapsed > 0) {
-                    lapsWithFinalDuration.push({
-                      id: Date.now(), // Use a new ID for this "pseudo-lap"
-                      timeAtLap: actualElapsed,
-                      duration: formatDuration(
-                        Math.floor(actualElapsed / 1000)
-                      ),
-                      timestamp: getCurrentTimestamp(),
-                    });
-                  } else if (lapsWithFinalDuration.length > 0) {
-                    // Calculate the duration for the very last recorded lap
-                    const lastLapTimeAt =
-                      lapsWithFinalDuration[lapsWithFinalDuration.length - 1]
-                        .timeAtLap;
-                    const secondLastLapTimeAt =
-                      lapsWithFinalDuration.length > 1
-                        ? lapsWithFinalDuration[
-                            lapsWithFinalDuration.length - 2
-                          ].timeAtLap
-                        : 0;
-                    const lastLapActualDuration =
-                      actualElapsed - secondLastLapTimeAt;
-                    // Update the last lap entry with the correct final duration
-                    lapsWithFinalDuration[
-                      lapsWithFinalDuration.length - 1
-                    ].duration = formatDuration(
-                      Math.floor(lastLapActualDuration / 1000)
-                    );
-                  }
+            
 
-                  setHistory((prev) => [
-                    ...prev,
-                    {
-                      id: Date.now(), // Unique ID for the session
-                      name: "Untitled", // Default name
-                      time: formatDuration(Math.floor(actualElapsed / 1000)), // Total session time
-                      timestamp: getCurrentTimestamp(), // Timestamp when session ended
-                      laps: lapsWithFinalDuration, // Include the array of laps with calculated durations
-                      isExpanded: false, // Add a flag to control expansion state for this history item
-                    },
-                  ]);
-
-                  // Reset state variables for the next session
-                  setTime(0);
-                  setDisplayTime(0);
-                  elapsedRef.current = 0;
-                  setIsRunning(false);
-                  setEditingId(null);
-                  setEditingText("");
-                  setCurrentLaps([]); // Clear the current laps
-                }}
-              >
-                Reset
-              </button>
-            )}
             <div className="history-section">
               <div className="history-toggle">
                 <h3 style={{ margin: 0 }}>History</h3>
@@ -660,9 +666,10 @@ function App() {
                             <ul className="lap-list">
                               {entry.laps.map((lap, index) => (
                                 <li key={lap.id} className="lap-item">
-                                  Lap {index + 1}: {lap.duration} (
-                                  {lap.timestamp})
-                                </li>
+                                 {lap.name} : {formatTime(lap.time, false)}
+                                </li>   
+                                         
+
                               ))}
                             </ul>
                           )}
@@ -709,7 +716,7 @@ function App() {
               </div>
             </div>{" "}
             {/* Ends .history-section */}
-          </div>{" "}
+          
           {/* This one closes the buttons wrapper */}
         </div>{" "}
         {/* This one closes the .App inner */}
@@ -720,8 +727,8 @@ function App() {
           </div>
         )}
         {conflictModalVisible && <ConflictResolutionModal />}
-      </div>
       {/* This one closes the .App-container */}
+      </div>
     </>
   );
 }
